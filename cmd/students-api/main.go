@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/nakul-krishnakumar/go-http/internal/config"
+	"github.com/nakul-krishnakumar/go-http/internal/http/handlers/student"
 )
 
 func main() {
@@ -19,9 +20,7 @@ func main() {
 	// setup router
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("welcome to students api"))
-	})
+	router.HandleFunc("POST /api/students", student.New())
 
 	// setup server
 	server := http.Server {
@@ -29,7 +28,7 @@ func main() {
 		Handler: router,
 	}
 
-	slog.Info("[INFO] server started", "url", "http://"+cfg.Addr)
+	slog.Info("Server started at http://"+cfg.Addr)
 	
 	//* graceful shutdown
 	done := make(chan os.Signal, 1)
@@ -39,21 +38,21 @@ func main() {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil{
-			slog.Error("failed to start server")
+			slog.Error("Failed to start server")
 		}
 	} ()
 
 	<- done
 
-	slog.Info("shutting down the server")
+	slog.Info("Shutting down the server")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		slog.Error("failed to shutdown server", slog.String("error", err.Error()))
+		slog.Error("Failed to shutdown server", slog.String("error", err.Error()))
 	}
 
-	slog.Info("server shutdown successfully")
+	slog.Info("Server shutdown successfully")
 
 }
